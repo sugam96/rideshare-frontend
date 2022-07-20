@@ -32,7 +32,66 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
+}
+
+.appContainer {
+  margin: auto;
+  flex-direction: row;
+  max-height: 800px;
+}
+
+.MapStyle {
+  width: 80%;
+  height: 600px;
+}
+
+.actionItems {
+  padding: 4px;
+}
+
+@media (max-width: 768px) {
+  .appContainer {
+    flex-direction: column;
+    margin: 0px;
+    padding: 0px;
+    height: 90vh
+  }
+
+  .MapStyle {
+    width: 100%;
+    max-height: 100%;
+  }
+
+  .actionItems {
+    padding: 2;
+  }
+}
+
+img {
+  height: 60px;
+  margin: auto;
+}
+
+.siteHomeBody {
+  background-image: url('../src/pp1.jpg');
+  background-size: cover;
+  height: 100vh;
+  background-position: center;
+  background-color: #61dafb;
+}
+
+.formsContainer{
+  margin: auto;
+  background-color: aliceblue;
+  padding: 20px;
+  max-width: 400px;
+  box-shadow: 0 0 10px #000;
+  background: rgba(0,0,0,0.5);
+}
+.form-floating{
+  margin-bottom: 20px;
 }
