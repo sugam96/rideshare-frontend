@@ -40,20 +40,21 @@
 
 .appContainer {
   margin: auto;
+  /* margin-left: 0; */
   flex-direction: row;
   max-height: 800px;
 }
 
 .MapStyle {
-  width: 80%;
-  height: 600px;
+  width: 70vw;
+  height: 90vh;
 }
 
 .actionItems {
   padding: 4px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 960px) {
   .appContainer {
     flex-direction: column;
     margin: 0px;

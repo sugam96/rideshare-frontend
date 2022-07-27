@@ -7,7 +7,7 @@ import { ActionItems } from './ActionItems';
 export const UserHome = () => {
     return (
         <div><NavBar />
-            <div className='container appContainer d-flex'>
+            <div className='container-fluid appContainer d-flex'>
                 <MapComponent />
                 <ActionItems />
             </div>
