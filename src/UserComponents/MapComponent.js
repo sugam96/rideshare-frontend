@@ -20,6 +20,24 @@ export const MapComponent = () => {
     return <div>Maps Loading</div>
   }
 
+  function getLocation() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(showPosition, showError);
+    } else { 
+      alert("Geolocation is not supported by this browser.");
+    }
+  }
+  
+  function showPosition(position) {
+    x.innerHTML = "Latitude: " + position.coords.latitude + 
+    "<br>Longitude: " + position.coords.longitude;
+  }
+
+  useEffect(() => {
+    getLocation();
+
+  })
+
   return (
     <div className='container-xl MapStyle'>
       <GoogleMap
