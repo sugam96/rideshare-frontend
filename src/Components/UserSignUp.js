@@ -14,6 +14,7 @@ export const UserSignUp = () => {
     const [isFirstValidated, setIsFirstValidated] = useState(false);
     const [isSecondValidated, setIsSecondValidated] = useState(false);
     const [showSuccessScreen, setShowSuccessScreen] = useState(false);
+    const [isEmailValidated, setIsEmailValidated] = useState(false)
     const handleChange = (e) => {
         const { id, value } = e.target;
         if (id === "checkbox") {
@@ -28,7 +29,6 @@ export const UserSignUp = () => {
     const handleFirstSubmit = (e) => {
         e.preventDefault();
         setStartValidatingFirst(true)
-
         setFormErrors(validateFirst(formValues));
         // console.log(formErrors)
         // if (Object.keys(formErrors).length === 0 && isFirstValidated)
@@ -47,6 +47,8 @@ export const UserSignUp = () => {
         setIsFirstSubmit(false);
         setIsSecondSubmit(false);
         setShowSuccessScreen(false);
+        setIsFirstValidated(false);
+        setFormErrors({});
     }
     async function emailNotExists(email) {
         const resp = await axios.post(`http://localhost:3050/UserEmailCheck`, { email_id: email }).then((res) => {
@@ -58,8 +60,12 @@ export const UserSignUp = () => {
             .catch(function (error) {
                 return 0;
             })
-        if (resp === 0)
+        if (resp === 0) {
             setFormErrors({ ...formErrors, email: 'Email Already Registered' });
+            setIsEmailValidated(false)
+        }
+        else
+            setIsEmailValidated(true);
     };
     async function createUser() {
         const resp = await axios.post(`http://localhost:3050/UserCreate`, {
@@ -89,16 +95,16 @@ export const UserSignUp = () => {
         }
     }
     const redirector = () => {
-        let timer = setTimeout(()=>{navigate("/UserLogin")}, 10000);
+        let timer = setTimeout(() => { navigate("/UserLogin") }, 10000);
         clearTimeout(timer);
-        timer = setTimeout(()=>{navigate("/UserLogin")}, 5000);
+        timer = setTimeout(() => { navigate("/UserLogin") }, 5000);
     }
     useEffect(() => {
         if (startValidatingFirst && !isFirstValidated) {
             setFormErrors(validateFirst(formValues));
             setStartValidatingFirst(false);
         }
-        if (isFirstValidated && Object.keys(formErrors).length === 0 && !isFirstSubmit) {
+        if (isFirstValidated && Object.keys(formErrors).length === 0 && !isFirstSubmit && isEmailValidated) {
             setIsFirstValidated(false);
             setIsFirstSubmit(true);
         }
@@ -115,7 +121,7 @@ export const UserSignUp = () => {
             createUser()
         }
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [formErrors]);
 
 
@@ -196,7 +202,7 @@ export const UserSignUp = () => {
 
                     <div className="checkbox mb-3">
                         <label>
-                            <input type="checkbox" id='checkbox' value={formValues.checkbox} onChange={handleChange} /> I Agree with the Terms and Conditions
+                            <input type="checkbox" id='checkbox' value={formValues.checkbox} onChange={handleChange} checked={formValues.checkbox} /> I Agree with the Terms and Conditions
                         </label>
                         <p className="text-warning text-start">
                             {formErrors.checkbox}

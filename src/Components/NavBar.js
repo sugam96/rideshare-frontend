@@ -4,13 +4,11 @@ import { Link } from 'react-router-dom'
 export const NavBar = (props) => {
   const forUser = props.forUser;
   let altLink;
-  console.log(forUser)
-  if(forUser){
-    altLink = <Link to="/DriverLogin" className="nav-link active">For Drivers</Link>
+  if (forUser) {
+    altLink = <Link to="/DriverLogin" className="nav-link active" onClick={() => { props.setForUser(false) }}>For Drivers</Link>
   }
-  else
-  {
-    altLink = <Link to="/UserLogin" className="nav-link active">For Riders</Link>
+  else {
+    altLink = <Link to="/UserLogin" className="nav-link active" onClick={() => { props.setForUser(true) }}>For Riders</Link>
   }
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark fs-5 mb-5">
