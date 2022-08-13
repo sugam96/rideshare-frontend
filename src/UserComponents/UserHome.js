@@ -18,6 +18,7 @@ const divStyle = {
 const defaultCenter = { lat: 43.62744043195785, lng: -79.67452569998788 };
 const Libraries = ['places'];
 let driverMarkers = [];
+let driverElement = <></>;
 
 export const UserHome = (props) => {
     const timeNow = new Date(Date.now());
@@ -29,6 +30,12 @@ export const UserHome = (props) => {
     const [directionsResponse, setDirectionsResponse] = useState(null);
     const [distance, setDistance] = useState('');
     const [duration, setDuration] = useState('');
+    const [rideScreen, setRideScreen] = useState(false);
+    const [rideBookingScreen, setRideBookingScreen] = useState(false)
+    const [rideWaitingScreen, setRideWaitingScreen] = useState(false);
+    const [gotRide, setGotRide] = useState(false);
+    const [origin, setOrigin] = useState("");
+    const [destination, setDestination] = useState("");
     /** @type React.MutableRefObject<HTMLInputElement> */
     const originRef = useRef();
     /** @type React.MutableRefObject<HTMLInputElement> */
@@ -36,7 +43,7 @@ export const UserHome = (props) => {
 
     const { isLoaded } = useJsApiLoader({
         id: 'google-map-script',
-        googleMapsApiKey12: process.env.REACT_APP_GOOGLE_API_KEY,
+        googleMapsApiKey: process.env.REACT_APP_GOOGLE_API_KEY,
         libraries: Libraries,
     })
 
@@ -67,6 +74,7 @@ export const UserHome = (props) => {
     function showPosition(position) {
         setCenter({ lat: position.coords.latitude, lng: position.coords.longitude });
         originRef.current = center;
+        setOrigin(center);
     }
 
     function setDriverMarkers(drivers) {
@@ -103,30 +111,25 @@ export const UserHome = (props) => {
             })
     }
 
-    function printLoc() {
-        console.log(destinationRef.current);
-        originRef.current.value = center;
-        console.log(originRef.current.value)
-    }
+
     function preDefinedRoute() {
         console.log(destinationRef.current.value);
         destinationRef.current.value = "Port Credit, Mississauga, ON, Canada";
-        calcRoute();
+        calcRoute(center, destinationRef.current.value);
     }
-    async function calcRoute() {
+    async function calcRoute(origin, destination) {
         clearRoute();
-        originRef.current.value = center;
-        console.log(destinationRef.current.value);
-        console.log(originRef.current.value)
-        if (originRef.current.value === '' || destinationRef.current.value === '') {
-            console.log("No Values", originRef.current.value, destinationRef.current.value);
+        console.log(origin);
+        console.log(destination)
+        if (origin === '' || origin === null || destination === '' || destination === null) {
+            console.log("No Values", origin, destination);
             return
         }
         // eslint-disable-next-line no-undef
         const directionsService = new google.maps.DirectionsService()
         const results = await directionsService.route({
-            origin: originRef.current.value,
-            destination: destinationRef.current.value,
+            origin: origin,
+            destination: destination,
             // eslint-disable-next-line no-undef
             travelMode: google.maps.TravelMode.DRIVING
         })
@@ -153,8 +156,58 @@ export const UserHome = (props) => {
             minutes = "0" + minutes
         return (hours + ":" + minutes);
     }
-    function requestRide() {
+    async function requestRide() {
+        setDestination(destinationRef.current.value);
         console.log("Requesting Ride");
+        console.log("From", origin);
+        console.log("To " + destination);
+        setRideScreen(true);
+        setRideWaitingScreen(true);
+        const resp = await axios.post(`http://localhost:3050/RideRequest`, { user_id: props.user.user_id, from_location: '67 Showboat Crescent, Brampton, ON, Canada', to_location: destinationRef.current.value }).then((res) => {
+            if (res.data.status) {
+                //console.log(res.data.ride_data);
+                //console.log(res.data.driver_data);
+                const ride_data = res.data.ride_data;
+                const driver_data = res.data.driver_data;
+                driverElement = (<div className="bd-callout bd-callout-info p-2 text-start mb-4">
+                    <h5>Driver Information</h5>
+                    <div>
+                        <span className="fw-semibold">{driver_data.first_name} {driver_data.last_name} </span>
+                        will arrive shortly.
+                        <br />
+                        Vehicle Name: <span className="fw-semibold">{driver_data.vehicle_name}</span>
+                        <br />
+                        Vehicle Number: <span className="fw-semibold">{driver_data.vehicle_number}</span>
+                    </div>
+                </div>)
+                setRideWaitingScreen(false);
+                driverRoute(driver_data);
+                
+            }
+            else
+                console.log(res.data.message);
+
+        })
+            .catch(function (error) {
+                return 0;
+            })
+    }
+
+    async function driverRoute(driver_data){
+        const locResp = axios.get(`http://localhost:3050/DriverLocation`, { driver_id: driver_data._id }).then((res) => {
+                    if (res.data.status) {
+                        const driverLoc = res.data.data;
+                        console.log(driverLoc);
+                        if (driverLoc) {
+                            calcRoute(driverLoc, center);
+                        }
+                    }
+                    else
+                        console.log("Didnt Get Driver Location");
+                })
+                    .catch(function (error) {
+                        return 0;
+                    })
     }
 
     if (!isLoaded) {
@@ -163,7 +216,7 @@ export const UserHome = (props) => {
     }
     return (
         <div><NavBar user={props.user} />
-            <div className='container-fluid appContainer d-flex'>
+            <div className='container-fluid appContainer d-flex p-auto'>
                 <div className='container-xl p-0 m-0 MapStyle'>
                     <GoogleMap
                         ref={mapRef}
@@ -186,28 +239,28 @@ export const UserHome = (props) => {
                         <></>
                     </GoogleMap>
                 </div>
-                <div className='p-5 pb-4 mx-auto border border-primary border-opacity-50 border-2'>
+                {!rideScreen && !rideBookingScreen && <div className='p-4 mx-1 border border-primary border-opacity-50 border-2'>
                     <div className='flex-fill d-flex flex-column fs-4 actionItems'>
                         <div className='d-flex m-2 text-center'>
-                            <Link to="/RideBooking" className='text-decoration-none text-black'><div className='d-flex flex-column flex-grow-1 bg-info bg-opacity-10 m-2 mx-4 p-2 px-4 rounded-2' style={divStyle}>
+                            <Link to="/UserHome" className='text-decoration-none text-black' onClick={()=>{setRideBookingScreen(true)}}><div className='d-flex flex-column flex-grow-1 bg-info bg-opacity-10 m-2 mx-4 p-2 px-4 rounded-2' style={divStyle}>
                                 <div>Ride</div>
                                 <img src={sedanIcon} alt="H" />
                             </div>
                             </Link>
-                            <Link to="/RideBooking" className='text-decoration-none text-black'><div className='d-flex flex-column flex-grow-1 bg-info bg-opacity-10 m-2 mx-4 p-2 px-4 rounded-2'>
+                            <Link to="/UserHome" className='text-decoration-none text-black'><div className='d-flex flex-column flex-grow-1 bg-info bg-opacity-10 m-2 mx-4 p-2 px-4 rounded-2'>
                                 <div>Book</div><img src={bookingIcon} alt="H" />
                             </div></Link>
                         </div>
 
                         <div className="input-group mb-3">
                             <span className="input-group-text" id="inputGroup-sizing-default">Where To?</span>
-                            <Autocomplete restrictions={{ country: ["ca"] }} onPlaceChanged={calcRoute}><input className="form-control" placeholder="Where To?" ref={destinationRef} /></Autocomplete>
+                            <Autocomplete restrictions={{ country: ["ca"] }} onPlaceChanged={() => { calcRoute(center, destinationRef.current.value) }}><input className="form-control" placeholder="Where To?" ref={destinationRef} /></Autocomplete>
                         </div>
                         <button type="button" className="btn btn-outline-info text-dark m-1">Lambton College, Brunel Road</button>
                         <button type="button" className="btn btn-outline-info text-dark m-1" onClick={preDefinedRoute}>Port Credit, Mississauga, ON, Canada</button>
 
                     </div>
-                    {!directionsResponse && <div className='RideInfoContainer'>
+                    {directionsResponse && <div className='RideInfoContainer'>
                         <div className="bd-callout bd-callout-info p-2 border border-info border-opacity-25">
                             <h5>Trip Info</h5>
                             <div>Distance: {distance.text}, Duration: {duration.text}
@@ -229,8 +282,86 @@ export const UserHome = (props) => {
                         </div>
 
                     </div>}
-                </div>
+                </div>}
+                {rideScreen && !rideBookingScreen && <div className='w-25 p-3 pb-4 mx-auto border border-primary border-opacity-50 border-2'>
+                    <div className="bd-callout bd-callout-info p-2 border border-info border-opacity-25">
+                        <h5>Ride Information</h5>
+                        <div className='text-start'>
+                            From: 67 Showboat Crescent, Brampton, ON, Canada
+                            {/* From: {origin.lat},{origin.lng} */}
+                            <br />
+                            To: {destination}
+                            <br />
+                            Distance: {distance.text}, Duration: {duration.text}
+                            <br />
+                            Cost: ${((distance.value / 1000) + (duration.value / 60)).toFixed(2)}
+                        </div>
+                    </div>
+                    {rideWaitingScreen && <div className="bd-callout bd-callout-info p-2 text-start mb-4">
+                        <h5>Requesting Ride</h5>
+                        <div>
+                            Waiting for Drivers
+                            <p className="placeholder-glow">
+                                <span className="placeholder col-7"></span>
+                                <span className="placeholder col-4"></span>
+                                <span className="placeholder col-4"></span>
+                                <span className="placeholder col-6"></span>
+                                <span className="placeholder col-8"></span>
+                            </p>
+                        </div>
+                        <div className='text-center'><button type="button" className="btn btn-outline-danger">Cancel</button></div>
+                    </div>}
+                    {!rideWaitingScreen && driverElement}
+                </div>}
+                {!rideScreen && rideBookingScreen && <div className='p-4 mx-1 border border-primary border-opacity-50 border-2'>
+                    <div className='flex-fill d-flex flex-column fs-4 actionItems'>
+                        <div className='d-flex m-2 text-center'>
+                            <Link to="/RideBooking" className='text-decoration-none text-black'><div className='d-flex flex-column flex-grow-1 bg-info bg-opacity-10 m-2 mx-4 p-2 px-4 rounded-2' style={divStyle}>
+                                <div>Ride</div>
+                                <img src={sedanIcon} alt="H" />
+                            </div>
+                            </Link>
+                            <Link to="/RideBooking" className='text-decoration-none text-black'><div className='d-flex flex-column flex-grow-1 bg-info bg-opacity-10 m-2 mx-4 p-2 px-4 rounded-2'>
+                                <div>Book</div><img src={bookingIcon} alt="H" />
+                            </div></Link>
+                        </div>
+
+                        <div className="input-group mb-3">
+                            <span className="input-group-text" id="inputGroup-sizing-default">Where To?</span>
+                            <Autocomplete restrictions={{ country: ["ca"] }} onPlaceChanged={() => { calcRoute(center, destinationRef.current.value) }}><input className="form-control" placeholder="Where To?" ref={originRef} /></Autocomplete>
+                        </div>
+                        <div className="input-group mb-3">
+                            <span className="input-group-text" id="inputGroup-sizing-default">Where To?</span>
+                            <Autocomplete restrictions={{ country: ["ca"] }} onPlaceChanged={() => { calcRoute(center, destinationRef.current.value) }}><input className="form-control" placeholder="Where To?" ref={destinationRef} /></Autocomplete>
+                        </div>
+                        <button type="button" className="btn btn-outline-info text-dark m-1">Lambton College, Brunel Road</button>
+                        <button type="button" className="btn btn-outline-info text-dark m-1" onClick={preDefinedRoute}>Port Credit, Mississauga, ON, Canada</button>
+
+                    </div>
+                    {directionsResponse && <div className='RideInfoContainer'>
+                        <div className="bd-callout bd-callout-info p-2 border border-info border-opacity-25">
+                            <h5>Trip Info</h5>
+                            <div>Distance: {distance.text}, Duration: {duration.text}
+                            </div>
+                        </div>
+
+                        <div className="bd-callout bd-callout-info p-2 text-start mb-4">
+                            <h5>Rapid Ride</h5>
+                            <div>8 Minutes Away | Arrive By: {timeCalc(duration, 8)}
+                                <br />
+                                Cost: ${((distance.value / 1000) + (duration.value / 60)).toFixed(2)}</div>
+                        </div>
+                        <Link to="/PaymentMethods" className='text-reset text-decoration-none'>
+                            <button type="button" className="btn btn-outline-info text-dark rounded-0 m-2 mt-3"><h6>Payment Method</h6> <div>Credit Card Ending with **1234</div></button>
+                        </Link>
+                        <div className='d-flex justify-content-around mt-3'>
+                            <button type="button" className="btn btn-lg btn-primary m-1" onClick={requestRide}>Confirm Ride</button>
+                            <button type="button" className="btn btn-lg btn-primary m-1">Ride Later</button>
+                        </div>
+
+                    </div>}
+                </div>}
             </div>
-            <Footer /></div>
+            </div>
     )
 }

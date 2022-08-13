@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 
 export const NavBar = (props) => {
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-dark bg-light py-0 mb-3">
+    <nav className="navbar navbar-expand navbar-dark bg-dark bg-light py-0 mb-3">
       <div className="container-fluid">
         <Link to="/UserLogin" className="navbar-brand" href="#">Ridelyy!</Link>
         <button className="navbar-toggler border-0" type="button" data-bs-toggle="collapse" aria-expanded="false">

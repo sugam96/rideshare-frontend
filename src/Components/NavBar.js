@@ -11,10 +11,10 @@ export const NavBar = (props) => {
     altLink = <Link to="/UserLogin" className="nav-link active" onClick={() => { props.setForUser(true) }}>For Riders</Link>
   }
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-dark fs-5 mb-5">
+    <nav className="navbar navbar-expand-lg navbar-dark bg-dark mb-5 py-1">
       <div className="container-fluid">
-        <Link to="/UserLogin" className="navbar-brand" href="#">Ridelyy!</Link>
-        <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
+        <Link to="/UserHome" className="navbar-brand" >Ridelyy!</Link>
+        <button className="navbar-toggler" type="button" data-bs-toggle="collapse" aria-expanded="false" aria-label="Toggle navigation">
           <span className="navbar-toggler-icon"></span>
         </button>
         <div className="collapse navbar-collapse" id="navbarColor01">
@@ -27,8 +27,8 @@ export const NavBar = (props) => {
             </li>
           </ul>
           <form className="d-flex m-auto" role="search">
-            <input className="form-control me-2" type="search" placeholder="Where To?" aria-label="Search" />
-            <button className="btn btn-outline-light" type="submit">Go</button>
+            <input className="form-control form-control-sm me-2" type="search" placeholder="Where To?" aria-label="Search" />
+            <button className="btn btn-sm btn-outline-light" type="submit">Go</button>
           </form>
           <ul className="navbar-nav mb-2 mb-lg-0">
             <li className="nav-item">

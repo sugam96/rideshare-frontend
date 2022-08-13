@@ -22,6 +22,10 @@ import { UserProfile } from './UserComponents/UserProfile'
 // Importing Driver Components
 import { DriverHome } from './DriverComponents/DriverHome'
 import { DriverProfile } from './DriverComponents/DriverProfile'
+import { Admin } from './AdminComponents/Admin';
+import { Dashboard } from './AdminComponents/Dashboard';
+import { Riders } from './AdminComponents/Riders';
+import { Drivers } from './AdminComponents/Drivers';
 
 
 
@@ -48,6 +52,8 @@ function App(props) {
     <div className='App'>
       <Router>
         <Routes>
+
+          {/* Visitor Routes */}
           <Route path="/" element={<><SiteHome forUser={forUser} setForUser={setForUser} /></>}>
             <Route path='' element={<UserLogin loginUser={loginUser} />} />
             <Route path='UserLogin' element={<UserLogin loginUser={loginUser} />} />
@@ -63,8 +69,16 @@ function App(props) {
           <Route path="RideBooking" element={< RideBooking />} />
 
           {/* Driver Routes */}
-          <Route path="DriverHome" element={driverLoggedIn ? <DriverHome driver_id={driver.driver_id} /> : <Navigate to="/DriverLogin" />} />
-          <Route path="DriverProfile" element={driverLoggedIn ? <DriverProfile driver_id={driver.driver_id} /> : <Navigate to="/DriverLogin" />} />
+          <Route path="DriverHome" element={driverLoggedIn ? <DriverHome driver={driver} /> : <Navigate to="/DriverLogin" />} />
+          <Route path="DriverProfile" element={driverLoggedIn ? <DriverProfile driver={driver} /> : <Navigate to="/DriverLogin" />} />
+
+          {/* Admin Routes */}
+          <Route path="/Admin" element={<Admin/>}>
+            <Route path='' element={<Dashboard/>} />
+            <Route path='Dashboard' element={<Dashboard/>} />
+            <Route path='Riders' element={<Riders/>} />
+            <Route path='Drivers' element={<Drivers/>} />
+          </Route>
         </Routes>
       </Router>
     </div>

@@ -32,7 +32,7 @@ export const DriverProfile = (props) => {
     async function initializer() {
         //axios
         console.log('Initializing');
-        const driver = await axios.get(`http://localhost:3050/driver/${props.driver_id}`, { params: { driver_id: props.driver_id } }).then((res) => {
+        const driver = await axios.get(`http://localhost:3050/driver/${props.driver.driver_id}`, { params: { driver_id: props.driver.driver_id } }).then((res) => {
             if (res.data.status)
                 return res.data.data;
             else
@@ -70,7 +70,7 @@ export const DriverProfile = (props) => {
     async function updateDriver() {
         if (isSubmit) {
             setIsSubmit(false);
-            const resp = await axios.put(`http://localhost:3050/DriverUpdate/${props.driver_id}`, {
+            const resp = await axios.put(`http://localhost:3050/DriverUpdate/${props.driver.driver_id}`, {
                 first_name: formValues.firstname,
                 last_name: formValues.lastname,
                 date_of_birth: formValues.dob,
@@ -149,7 +149,7 @@ export const DriverProfile = (props) => {
 
 
     return (
-        <div><NavBar />
+        <div><NavBar driver={props.driver} />
             <div className="container-fluid text-center">
                 <div className="row m-1">
                     <div className="col col-lg-3 border border-1">
